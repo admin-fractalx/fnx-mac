@@ -1,0 +1,4 @@
+.build/
+*.app
+*.zip
+Sources/FnX/Secrets.swift
