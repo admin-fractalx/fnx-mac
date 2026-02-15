@@ -30,8 +30,8 @@ final class OnboardingWindow: NSWindow {
     private var blobLayers: [CAGradientLayer] = []
     private var glowLayer = CALayer()
 
-    private let W: CGFloat = 520
-    private let H: CGFloat = 480
+    private let W: CGFloat = 540
+    private let H: CGFloat = 580
 
     init(
         audioRecorder: AudioRecorder,
@@ -43,7 +43,7 @@ final class OnboardingWindow: NSWindow {
         self.onComplete = onComplete
 
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 580),
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -76,33 +76,33 @@ final class OnboardingWindow: NSWindow {
     private func setupChrome() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: W, height: H))
         root.wantsLayer = true
-        root.layer?.cornerRadius = 24
+        root.layer?.cornerRadius = 28
         root.layer?.masksToBounds = true
 
         // Animated gradient blobs behind the vibrancy
         let blobHost = NSView(frame: root.bounds)
         blobHost.wantsLayer = true
         blobHost.autoresizingMask = [.width, .height]
-        blobHost.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.55).cgColor
+        blobHost.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.6).cgColor
 
         let colors: [(NSColor, NSColor)] = [
-            (.systemBlue.withAlphaComponent(0.35), .systemCyan.withAlphaComponent(0.15)),
-            (.systemPurple.withAlphaComponent(0.3), .systemPink.withAlphaComponent(0.12)),
-            (.systemTeal.withAlphaComponent(0.25), .systemIndigo.withAlphaComponent(0.1)),
+            (.systemBlue.withAlphaComponent(0.30), .systemCyan.withAlphaComponent(0.12)),
+            (.systemPurple.withAlphaComponent(0.25), .systemPink.withAlphaComponent(0.10)),
+            (.systemTeal.withAlphaComponent(0.20), .systemIndigo.withAlphaComponent(0.08)),
         ]
 
-        let blobSizes: [CGFloat] = [220, 180, 200]
+        let blobSizes: [CGFloat] = [260, 220, 240]
         let positions: [CGPoint] = [
-            CGPoint(x: 80, y: H - 120),
-            CGPoint(x: W - 100, y: H - 280),
-            CGPoint(x: W / 2, y: 80),
+            CGPoint(x: 90, y: H - 140),
+            CGPoint(x: W - 110, y: H - 320),
+            CGPoint(x: W / 2, y: 100),
         ]
 
         for (i, (c1, c2)) in colors.enumerated() {
             let blob = CAGradientLayer()
             blob.type = .radial
             blob.colors = [c1.cgColor, c2.cgColor, NSColor.clear.cgColor]
-            blob.locations = [0, 0.5, 1]
+            blob.locations = [0, 0.45, 1]
             blob.startPoint = CGPoint(x: 0.5, y: 0.5)
             blob.endPoint = CGPoint(x: 1, y: 1)
             let s = blobSizes[i]
@@ -126,21 +126,40 @@ final class OnboardingWindow: NSWindow {
         // Subtle inner border for glass edge
         let border = CALayer()
         border.frame = root.bounds
-        border.cornerRadius = 24
+        border.cornerRadius = 28
         border.borderWidth = 0.5
-        border.borderColor = NSColor.white.withAlphaComponent(0.18).cgColor
+        border.borderColor = NSColor.white.withAlphaComponent(0.15).cgColor
         root.layer?.addSublayer(border)
+
+        // Inner glow border for depth
+        let innerGlow = CALayer()
+        innerGlow.frame = root.bounds.insetBy(dx: 1, dy: 1)
+        innerGlow.cornerRadius = 27
+        innerGlow.borderWidth = 0.5
+        innerGlow.borderColor = NSColor.white.withAlphaComponent(0.06).cgColor
+        root.layer?.addSublayer(innerGlow)
 
         // Top highlight — the liquid glass "catch light"
         let highlight = CAGradientLayer()
         highlight.colors = [
-            NSColor.white.withAlphaComponent(0.12).cgColor,
+            NSColor.white.withAlphaComponent(0.10).cgColor,
             NSColor.white.withAlphaComponent(0.0).cgColor,
         ]
         highlight.startPoint = CGPoint(x: 0.5, y: 1)
         highlight.endPoint = CGPoint(x: 0.5, y: 0)
-        highlight.frame = CGRect(x: 0, y: H - 100, width: W, height: 100)
+        highlight.frame = CGRect(x: 0, y: H - 120, width: W, height: 120)
         root.layer?.addSublayer(highlight)
+
+        // Bottom subtle reflection
+        let bottomReflect = CAGradientLayer()
+        bottomReflect.colors = [
+            NSColor.white.withAlphaComponent(0.03).cgColor,
+            NSColor.white.withAlphaComponent(0.0).cgColor,
+        ]
+        bottomReflect.startPoint = CGPoint(x: 0.5, y: 0)
+        bottomReflect.endPoint = CGPoint(x: 0.5, y: 1)
+        bottomReflect.frame = CGRect(x: 0, y: 0, width: W, height: 60)
+        root.layer?.addSublayer(bottomReflect)
 
         containerView.frame = root.bounds
         containerView.autoresizingMask = [.width, .height]
@@ -219,14 +238,14 @@ final class OnboardingWindow: NSWindow {
         let iconContainerSize = iconSize * 1.6
         let iconContainer = NSView(frame: NSRect(
             x: (W - iconContainerSize) / 2,
-            y: H - 40 - iconContainerSize,
+            y: H - 70 - iconContainerSize,
             width: iconContainerSize,
             height: iconContainerSize
         ))
         iconContainer.wantsLayer = true
         iconContainer.layer?.masksToBounds = false
 
-        let glowSize = iconContainerSize + 24
+        let glowSize = iconContainerSize + 30
         let glow = CALayer()
         glow.frame = CGRect(
             x: (iconContainerSize - glowSize) / 2,
@@ -234,12 +253,12 @@ final class OnboardingWindow: NSWindow {
             width: glowSize,
             height: glowSize
         )
-        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.2).cgColor
+        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
         glow.cornerRadius = glowSize / 2
         let glowPulse = CABasicAnimation(keyPath: "opacity")
-        glowPulse.fromValue = 0.4
-        glowPulse.toValue = 1.0
-        glowPulse.duration = 2.0
+        glowPulse.fromValue = 0.3
+        glowPulse.toValue = 0.9
+        glowPulse.duration = 2.5
         glowPulse.autoreverses = true
         glowPulse.repeatCount = .infinity
         glowPulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
@@ -257,7 +276,7 @@ final class OnboardingWindow: NSWindow {
         page.addSubview(iconContainer)
 
         // Layout: icon bottom edge
-        let iconBottom = H - 40 - iconContainerSize
+        let iconBottom = H - 70 - iconContainerSize
 
         // Title
         let titleH = titleSize + 12
@@ -265,27 +284,27 @@ final class OnboardingWindow: NSWindow {
         titleLabel.font = .systemFont(ofSize: titleSize, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 40, y: iconBottom - 24 - titleH, width: W - 80, height: titleH)
+        titleLabel.frame = NSRect(x: 40, y: iconBottom - 28 - titleH, width: W - 80, height: titleH)
         page.addSubview(titleLabel)
 
-        let titleBottom = iconBottom - 24 - titleH
+        let titleBottom = iconBottom - 28 - titleH
 
         // Subtitle
         let subtitleLabel = NSTextField(labelWithString: subtitle)
         subtitleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.65)
+        subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.60)
         subtitleLabel.alignment = .center
-        subtitleLabel.frame = NSRect(x: 40, y: titleBottom - 14 - 24, width: W - 80, height: 24)
+        subtitleLabel.frame = NSRect(x: 40, y: titleBottom - 16 - 24, width: W - 80, height: 24)
         page.addSubview(subtitleLabel)
 
-        let subtitleBottom = titleBottom - 14 - 24
+        let subtitleBottom = titleBottom - 16 - 24
 
         // Body
         let bodyLabel = NSTextField(wrappingLabelWithString: body)
         bodyLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        bodyLabel.textColor = NSColor.white.withAlphaComponent(0.4)
+        bodyLabel.textColor = NSColor.white.withAlphaComponent(0.38)
         bodyLabel.alignment = .center
-        bodyLabel.frame = NSRect(x: 60, y: subtitleBottom - 18 - 60, width: W - 120, height: 60)
+        bodyLabel.frame = NSRect(x: 60, y: subtitleBottom - 20 - 60, width: W - 120, height: 60)
         bodyLabel.maximumNumberOfLines = 4
         page.addSubview(bodyLabel)
 
@@ -302,8 +321,15 @@ final class OnboardingWindow: NSWindow {
         titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 40, y: H - 80, width: W - 80, height: 38)
+        titleLabel.frame = NSRect(x: 40, y: H - 100, width: W - 80, height: 38)
         page.addSubview(titleLabel)
+
+        let subtitleLabel = NSTextField(labelWithString: "Three simple steps to voice-powered typing.")
+        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.45)
+        subtitleLabel.alignment = .center
+        subtitleLabel.frame = NSRect(x: 40, y: H - 136, width: W - 80, height: 20)
+        page.addSubview(subtitleLabel)
 
         let steps: [(icon: String, label: String, desc: String)] = [
             ("keyboard", "Hold Fn", "Press and hold the\nFunction key"),
@@ -311,12 +337,12 @@ final class OnboardingWindow: NSWindow {
             ("text.cursor", "Release", "Text appears at\nyour cursor"),
         ]
 
-        let cardW: CGFloat = 130
-        let cardH: CGFloat = 150
-        let spacing: CGFloat = 16
+        let cardW: CGFloat = 136
+        let cardH: CGFloat = 156
+        let spacing: CGFloat = 18
         let totalW = CGFloat(steps.count) * cardW + CGFloat(steps.count - 1) * spacing
         let startX = (W - totalW) / 2
-        let cardY: CGFloat = H - 290
+        let cardY: CGFloat = H - 340
 
         for (i, step) in steps.enumerated() {
             let card = NSView(frame: NSRect(
@@ -326,15 +352,15 @@ final class OnboardingWindow: NSWindow {
                 height: cardH
             ))
             card.wantsLayer = true
-            card.layer?.cornerRadius = 16
-            card.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.07).cgColor
+            card.layer?.cornerRadius = 18
+            card.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.06).cgColor
             card.layer?.borderWidth = 0.5
-            card.layer?.borderColor = NSColor.white.withAlphaComponent(0.1).cgColor
+            card.layer?.borderColor = NSColor.white.withAlphaComponent(0.08).cgColor
 
             // Step number
             let numLabel = NSTextField(labelWithString: "\(i + 1)")
-            numLabel.font = .systemFont(ofSize: 11, weight: .bold)
-            numLabel.textColor = NSColor.white.withAlphaComponent(0.3)
+            numLabel.font = .monospacedDigitSystemFont(ofSize: 10, weight: .bold)
+            numLabel.textColor = NSColor.white.withAlphaComponent(0.25)
             numLabel.alignment = .center
             numLabel.frame = NSRect(x: 0, y: cardH - 30, width: cardW, height: 16)
             card.addSubview(numLabel)
@@ -346,7 +372,7 @@ final class OnboardingWindow: NSWindow {
                 icon.image = img.withSymbolConfiguration(config)
                 icon.contentTintColor = .controlAccentColor
             }
-            icon.frame = NSRect(x: (cardW - 36) / 2, y: cardH - 72, width: 36, height: 36)
+            icon.frame = NSRect(x: (cardW - 36) / 2, y: cardH - 76, width: 36, height: 36)
             icon.imageAlignment = .alignCenter
             card.addSubview(icon)
 
@@ -355,15 +381,15 @@ final class OnboardingWindow: NSWindow {
             lbl.font = .systemFont(ofSize: 13, weight: .semibold)
             lbl.textColor = .white
             lbl.alignment = .center
-            lbl.frame = NSRect(x: 4, y: cardH - 98, width: cardW - 8, height: 18)
+            lbl.frame = NSRect(x: 4, y: cardH - 104, width: cardW - 8, height: 18)
             card.addSubview(lbl)
 
             // Desc
             let desc = NSTextField(wrappingLabelWithString: step.desc)
             desc.font = .systemFont(ofSize: 11, weight: .regular)
-            desc.textColor = NSColor.white.withAlphaComponent(0.4)
+            desc.textColor = NSColor.white.withAlphaComponent(0.38)
             desc.alignment = .center
-            desc.frame = NSRect(x: 8, y: 8, width: cardW - 16, height: 34)
+            desc.frame = NSRect(x: 10, y: 12, width: cardW - 20, height: 34)
             desc.maximumNumberOfLines = 2
             card.addSubview(desc)
 
@@ -373,12 +399,12 @@ final class OnboardingWindow: NSWindow {
             if i < steps.count - 1 {
                 let arrow = NSImageView()
                 if let img = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: nil) {
-                    let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+                    let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .medium)
                     arrow.image = img.withSymbolConfiguration(config)
-                    arrow.contentTintColor = NSColor.white.withAlphaComponent(0.2)
+                    arrow.contentTintColor = NSColor.white.withAlphaComponent(0.15)
                 }
                 arrow.frame = NSRect(
-                    x: startX + CGFloat(i) * (cardW + spacing) + cardW + 2,
+                    x: startX + CGFloat(i) * (cardW + spacing) + cardW + 3,
                     y: cardY + cardH / 2 - 8,
                     width: 12,
                     height: 16
@@ -390,9 +416,9 @@ final class OnboardingWindow: NSWindow {
         // Bottom hint
         let hint = NSTextField(labelWithString: "Works in any text field across macOS.")
         hint.font = .systemFont(ofSize: 13, weight: .regular)
-        hint.textColor = NSColor.white.withAlphaComponent(0.35)
+        hint.textColor = NSColor.white.withAlphaComponent(0.30)
         hint.alignment = .center
-        hint.frame = NSRect(x: 40, y: H - 350, width: W - 80, height: 20)
+        hint.frame = NSRect(x: 40, y: H - 384, width: W - 80, height: 20)
         page.addSubview(hint)
 
         return page
@@ -405,12 +431,12 @@ final class OnboardingWindow: NSWindow {
         page.wantsLayer = true
 
         // Icon with glow
-        let iconContainer = NSView(frame: NSRect(x: (W - 90) / 2, y: H - 150, width: 90, height: 90))
+        let iconContainer = NSView(frame: NSRect(x: (W - 90) / 2, y: H - 170, width: 90, height: 90))
         iconContainer.wantsLayer = true
 
         let glow = CALayer()
-        glow.frame = iconContainer.bounds.insetBy(dx: -8, dy: -8)
-        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+        glow.frame = iconContainer.bounds.insetBy(dx: -10, dy: -10)
+        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.12).cgColor
         glow.cornerRadius = glow.frame.width / 2
         iconContainer.layer?.addSublayer(glow)
 
@@ -428,18 +454,19 @@ final class OnboardingWindow: NSWindow {
         titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 40, y: H - 210, width: W - 80, height: 38)
+        titleLabel.frame = NSRect(x: 40, y: H - 230, width: W - 80, height: 38)
         page.addSubview(titleLabel)
 
         let subtitleLabel = NSTextField(labelWithString: "FnX needs these to work properly.")
         subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.5)
+        subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.45)
         subtitleLabel.alignment = .center
-        subtitleLabel.frame = NSRect(x: 40, y: H - 240, width: W - 80, height: 20)
+        subtitleLabel.frame = NSRect(x: 40, y: H - 262, width: W - 80, height: 20)
         page.addSubview(subtitleLabel)
 
-        let rowWidth: CGFloat = 400
+        let rowWidth: CGFloat = 480
         let rowX = (W - rowWidth) / 2
+        let rowH: CGFloat = 66
 
         let micRow = makePermissionRow(
             icon: "mic.fill",
@@ -448,18 +475,18 @@ final class OnboardingWindow: NSWindow {
             checkView: micCheck,
             buttonTitle: "Allow",
             action: #selector(requestMicPermission),
-            frame: NSRect(x: rowX, y: H - 318, width: rowWidth, height: 60)
+            frame: NSRect(x: rowX, y: H - 350, width: rowWidth, height: rowH)
         )
         page.addSubview(micRow)
 
         let accRow = makePermissionRow(
-            icon: "universal.access",
+            icon: "accessibility",
             title: "Accessibility",
             description: "Listen for the Fn key & type text for you.",
             checkView: accessibilityCheck,
             buttonTitle: "Open Settings",
             action: #selector(openAccessibilitySettings),
-            frame: NSRect(x: rowX, y: H - 390, width: rowWidth, height: 60)
+            frame: NSRect(x: rowX, y: H - 430, width: rowWidth, height: rowH)
         )
         page.addSubview(accRow)
 
@@ -477,18 +504,19 @@ final class OnboardingWindow: NSWindow {
     ) -> NSView {
         let row = NSView(frame: frame)
         row.wantsLayer = true
-        row.layer?.cornerRadius = 14
-        row.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.07).cgColor
+        row.layer?.cornerRadius = 16
+        row.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.06).cgColor
         row.layer?.borderWidth = 0.5
         row.layer?.borderColor = NSColor.white.withAlphaComponent(0.08).cgColor
 
-        let iconBg = NSView(frame: NSRect(x: 14, y: 14, width: 32, height: 32))
+        let rH = frame.height
+        let iconBg = NSView(frame: NSRect(x: 16, y: (rH - 34) / 2, width: 34, height: 34))
         iconBg.wantsLayer = true
-        iconBg.layer?.cornerRadius = 8
-        iconBg.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+        iconBg.layer?.cornerRadius = 10
+        iconBg.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.12).cgColor
         row.addSubview(iconBg)
 
-        let iconView = NSImageView(frame: NSRect(x: 4, y: 4, width: 24, height: 24))
+        let iconView = NSImageView(frame: NSRect(x: 5, y: 5, width: 24, height: 24))
         if let img = NSImage(systemSymbolName: icon, accessibilityDescription: nil) {
             let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
             iconView.image = img.withSymbolConfiguration(config)
@@ -497,26 +525,32 @@ final class OnboardingWindow: NSWindow {
         iconView.imageAlignment = .alignCenter
         iconBg.addSubview(iconView)
 
+        // Right side: checkmark (22px) + gap (10) + button + gap (12) from right edge
+        let checkX = frame.width - 12 - 22
+        let btnW: CGFloat = buttonTitle.count > 6 ? 110 : 80
+        let btnX = checkX - 10 - btnW
+
         let titleLabel = NSTextField(labelWithString: title)
         titleLabel.font = .systemFont(ofSize: 14, weight: .semibold)
         titleLabel.textColor = .white
-        titleLabel.frame = NSRect(x: 56, y: 34, width: 180, height: 18)
+        titleLabel.frame = NSRect(x: 62, y: rH / 2 + 2, width: btnX - 62 - 8, height: 18)
         row.addSubview(titleLabel)
 
         let descLabel = NSTextField(labelWithString: description)
-        descLabel.font = .systemFont(ofSize: 12, weight: .regular)
-        descLabel.textColor = NSColor.white.withAlphaComponent(0.4)
-        descLabel.frame = NSRect(x: 56, y: 12, width: 220, height: 16)
+        descLabel.font = .systemFont(ofSize: 11, weight: .regular)
+        descLabel.textColor = NSColor.white.withAlphaComponent(0.38)
+        descLabel.lineBreakMode = .byTruncatingTail
+        descLabel.frame = NSRect(x: 62, y: rH / 2 - 17, width: btnX - 62 - 8, height: 15)
         row.addSubview(descLabel)
 
         let btn = NSButton(title: buttonTitle, target: self, action: action)
         btn.bezelStyle = .rounded
         btn.controlSize = .regular
         btn.font = .systemFont(ofSize: 12, weight: .medium)
-        btn.frame = NSRect(x: frame.width - 128, y: 16, width: 90, height: 28)
+        btn.frame = NSRect(x: btnX, y: (rH - 28) / 2, width: btnW, height: 28)
         row.addSubview(btn)
 
-        checkView.frame = NSRect(x: frame.width - 32, y: 20, width: 22, height: 22)
+        checkView.frame = NSRect(x: checkX, y: (rH - 22) / 2, width: 22, height: 22)
         checkView.imageAlignment = .alignCenter
         setCheckState(checkView, granted: false)
         row.addSubview(checkView)
@@ -552,7 +586,8 @@ final class OnboardingWindow: NSWindow {
         setCheckState(micCheck, granted: micGranted)
         if micGranted && !prevMic { animateCheckmark(micCheck) }
 
-        let accGranted = AXIsProcessTrusted()
+        let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): false] as CFDictionary
+        let accGranted = AXIsProcessTrustedWithOptions(opts)
         let prevAcc = accessibilityCheck.contentTintColor == .systemGreen
         setCheckState(accessibilityCheck, granted: accGranted)
         if accGranted && !prevAcc { animateCheckmark(accessibilityCheck) }
@@ -575,7 +610,8 @@ final class OnboardingWindow: NSWindow {
     private func updateButtonForPermissions() {
         if currentPage == 3 {
             let micOK = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-            let accOK = AXIsProcessTrusted()
+            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): false] as CFDictionary
+            let accOK = AXIsProcessTrustedWithOptions(opts)
             actionButton.isEnabled = micOK && accOK
             actionButton.title = (micOK && accOK) ? "Continue" : "Grant Permissions"
         }
@@ -600,12 +636,12 @@ final class OnboardingWindow: NSWindow {
         page.wantsLayer = true
 
         // Icon
-        let iconContainer = NSView(frame: NSRect(x: (W - 90) / 2, y: H - 140, width: 90, height: 90))
+        let iconContainer = NSView(frame: NSRect(x: (W - 90) / 2, y: H - 160, width: 90, height: 90))
         iconContainer.wantsLayer = true
 
         let glow = CALayer()
-        glow.frame = iconContainer.bounds.insetBy(dx: -8, dy: -8)
-        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+        glow.frame = iconContainer.bounds.insetBy(dx: -10, dy: -10)
+        glow.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.12).cgColor
         glow.cornerRadius = glow.frame.width / 2
         iconContainer.layer?.addSublayer(glow)
 
@@ -623,41 +659,41 @@ final class OnboardingWindow: NSWindow {
         titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
         titleLabel.textColor = .white
         titleLabel.alignment = .center
-        titleLabel.frame = NSRect(x: 40, y: H - 200, width: W - 80, height: 38)
+        titleLabel.frame = NSRect(x: 40, y: H - 220, width: W - 80, height: 38)
         page.addSubview(titleLabel)
 
         // Status pill
-        let pillW: CGFloat = 220
-        let pill = NSView(frame: NSRect(x: (W - pillW) / 2, y: H - 244, width: pillW, height: 30))
+        let pillW: CGFloat = 230
+        let pill = NSView(frame: NSRect(x: (W - pillW) / 2, y: H - 268, width: pillW, height: 32))
         pill.wantsLayer = true
-        pill.layer?.cornerRadius = 15
-        pill.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.07).cgColor
+        pill.layer?.cornerRadius = 16
+        pill.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.06).cgColor
         pill.layer?.borderWidth = 0.5
         pill.layer?.borderColor = NSColor.white.withAlphaComponent(0.08).cgColor
 
         tryDot.wantsLayer = true
         tryDot.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.25).cgColor
         tryDot.layer?.cornerRadius = 4.5
-        tryDot.frame = NSRect(x: 14, y: 11, width: 9, height: 9)
+        tryDot.frame = NSRect(x: 14, y: 12, width: 9, height: 9)
         pill.addSubview(tryDot)
 
         tryStatusLabel.font = .systemFont(ofSize: 12, weight: .medium)
-        tryStatusLabel.textColor = NSColor.white.withAlphaComponent(0.6)
+        tryStatusLabel.textColor = NSColor.white.withAlphaComponent(0.55)
         tryStatusLabel.alignment = .left
         tryStatusLabel.stringValue = "Hold Fn and speak..."
-        tryStatusLabel.frame = NSRect(x: 30, y: 5, width: pillW - 40, height: 20)
+        tryStatusLabel.frame = NSRect(x: 32, y: 6, width: pillW - 44, height: 20)
         pill.addSubview(tryStatusLabel)
         page.addSubview(pill)
 
         // Text view
         let textW: CGFloat = W - 80
-        let textH: CGFloat = 150
-        let scrollContainer = NSView(frame: NSRect(x: 40, y: H - 420, width: textW, height: textH))
+        let textH: CGFloat = 160
+        let scrollContainer = NSView(frame: NSRect(x: 40, y: H - 460, width: textW, height: textH))
         scrollContainer.wantsLayer = true
-        scrollContainer.layer?.cornerRadius = 14
-        scrollContainer.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.05).cgColor
+        scrollContainer.layer?.cornerRadius = 16
+        scrollContainer.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.04).cgColor
         scrollContainer.layer?.borderWidth = 0.5
-        scrollContainer.layer?.borderColor = NSColor.white.withAlphaComponent(0.08).cgColor
+        scrollContainer.layer?.borderColor = NSColor.white.withAlphaComponent(0.07).cgColor
         scrollContainer.layer?.masksToBounds = true
 
         let scrollView = NSScrollView(frame: scrollContainer.bounds)
@@ -673,7 +709,7 @@ final class OnboardingWindow: NSWindow {
         tryTextView.font = .systemFont(ofSize: 14, weight: .regular)
         tryTextView.textColor = .white
         tryTextView.backgroundColor = .clear
-        tryTextView.textContainerInset = NSSize(width: 14, height: 14)
+        tryTextView.textContainerInset = NSSize(width: 16, height: 16)
         tryTextView.isRichText = false
         tryTextView.string = ""
         tryTextView.drawsBackground = false
@@ -685,10 +721,10 @@ final class OnboardingWindow: NSWindow {
         // Placeholder
         let placeholder = NSTextField(labelWithString: "Your transcription will appear here...")
         placeholder.font = .systemFont(ofSize: 13, weight: .regular)
-        placeholder.textColor = NSColor.white.withAlphaComponent(0.2)
+        placeholder.textColor = NSColor.white.withAlphaComponent(0.18)
         placeholder.alignment = .center
         placeholder.tag = 999
-        placeholder.frame = NSRect(x: 40, y: H - 360, width: textW, height: 20)
+        placeholder.frame = NSRect(x: 40, y: H - 400, width: textW, height: 20)
         page.addSubview(placeholder)
 
         return page
@@ -816,10 +852,10 @@ final class OnboardingWindow: NSWindow {
     private func buildDots() {
         let dotSize: CGFloat = 7
         let activeW: CGFloat = 22
-        let spacing: CGFloat = 6
+        let spacing: CGFloat = 7
         let totalWidth = activeW + CGFloat(totalPages - 1) * (dotSize + spacing) - spacing + spacing
         let startX = (W - totalWidth) / 2
-        let y: CGFloat = 58
+        let y: CGFloat = 76
 
         for i in 0..<totalPages {
             let isActive = i == 0
@@ -833,8 +869,8 @@ final class OnboardingWindow: NSWindow {
             dot.wantsLayer = true
             dot.layer?.cornerRadius = dotSize / 2
             dot.layer?.backgroundColor = isActive
-                ? NSColor.white.withAlphaComponent(0.9).cgColor
-                : NSColor.white.withAlphaComponent(0.2).cgColor
+                ? NSColor.white.withAlphaComponent(0.85).cgColor
+                : NSColor.white.withAlphaComponent(0.18).cgColor
             containerView.addSubview(dot)
             dots.append(dot)
         }
@@ -843,7 +879,7 @@ final class OnboardingWindow: NSWindow {
     private func updateDots() {
         let dotSize: CGFloat = 7
         let activeW: CGFloat = 22
-        let spacing: CGFloat = 6
+        let spacing: CGFloat = 7
 
         var xOffset: CGFloat = 0
         let totalWidth: CGFloat = activeW + CGFloat(totalPages - 1) * dotSize + CGFloat(totalPages - 1) * spacing
@@ -862,8 +898,8 @@ final class OnboardingWindow: NSWindow {
                     height: dotSize
                 )
                 dot.layer?.backgroundColor = isActive
-                    ? NSColor.white.withAlphaComponent(0.9).cgColor
-                    : NSColor.white.withAlphaComponent(0.2).cgColor
+                    ? NSColor.white.withAlphaComponent(0.85).cgColor
+                    : NSColor.white.withAlphaComponent(0.18).cgColor
                 xOffset += w + spacing
             }
         }
@@ -877,7 +913,7 @@ final class OnboardingWindow: NSWindow {
         actionButton.font = .systemFont(ofSize: 14, weight: .semibold)
         actionButton.target = self
         actionButton.action = #selector(buttonTapped)
-        actionButton.frame = NSRect(x: (W - 160) / 2, y: 16, width: 160, height: 36)
+        actionButton.frame = NSRect(x: (W - 180) / 2, y: 28, width: 180, height: 38)
         containerView.addSubview(actionButton)
         updateButtonTitle()
     }
