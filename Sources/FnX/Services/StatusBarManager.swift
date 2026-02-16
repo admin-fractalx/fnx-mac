@@ -28,8 +28,15 @@ public final class StatusBarManager {
 
     private func setupButton() {
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "FnX")
-            button.image?.isTemplate = true
+            if let iconURL = Bundle.module.url(forResource: "menubar_icon", withExtension: "png"),
+               let image = NSImage(contentsOf: iconURL) {
+                image.size = NSSize(width: 18, height: 18)
+                image.isTemplate = true
+                button.image = image
+            } else {
+                button.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "FnX")
+                button.image?.isTemplate = true
+            }
         }
     }
 
@@ -101,9 +108,16 @@ public final class StatusBarManager {
                 button.image = NSImage(systemSymbolName: "record.circle.fill", accessibilityDescription: "Recording")
                 button.contentTintColor = .systemRed
             } else {
-                button.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "FnX")
+                if let iconURL = Bundle.module.url(forResource: "menubar_icon", withExtension: "png"),
+                   let image = NSImage(contentsOf: iconURL) {
+                    image.size = NSSize(width: 18, height: 18)
+                    image.isTemplate = true
+                    button.image = image
+                } else {
+                    button.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "FnX")
+                    button.image?.isTemplate = true
+                }
                 button.contentTintColor = nil
-                button.image?.isTemplate = true
             }
         }
     }

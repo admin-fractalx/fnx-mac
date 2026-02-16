@@ -20,13 +20,23 @@ private struct FreePaywallView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if let logoURL = Bundle.module.url(forResource: "AppLogo", withExtension: "png"),
+               let nsImage = NSImage(contentsOf: logoURL) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 13))
+                    .padding(.top, 16)
+            }
+
             UsageCard(viewModel: viewModel)
                 .padding(.horizontal, 24)
-                .padding(.top, 20)
+                .padding(.top, 12)
 
             Text("Upgrade to FnX Pro")
                 .font(.system(size: 22, weight: .bold))
-                .padding(.top, 16)
+                .padding(.top, 12)
 
             Text("Unlock unlimited transcriptions and Smart Rules")
                 .font(.system(size: 13))
@@ -328,9 +338,21 @@ private struct ProStatusView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 52))
-                .foregroundStyle(.green)
+            ZStack(alignment: .bottomTrailing) {
+                if let logoURL = Bundle.module.url(forResource: "AppLogo", withExtension: "png"),
+                   let nsImage = NSImage(contentsOf: logoURL) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 72, height: 72)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.green)
+                    .background(Circle().fill(.white).frame(width: 18, height: 18))
+                    .offset(x: 4, y: 4)
+            }
 
             Text("FnX Pro Active")
                 .font(.system(size: 24, weight: .bold))

@@ -38,13 +38,23 @@ public final class OnboardingWindow: NSWindow {
         root.wantsLayer = true
         root.layer?.cornerRadius = 28
         root.layer?.masksToBounds = true
+        root.layer?.backgroundColor = NSColor.black.cgColor
 
+        // Dark glass effect behind the SwiftUI content
         let vibrancy = NSVisualEffectView(frame: root.bounds)
-        vibrancy.material = .hudWindow
+        vibrancy.material = .sidebar
         vibrancy.state = .active
         vibrancy.blendingMode = .behindWindow
+        vibrancy.appearance = NSAppearance(named: .darkAqua)
         vibrancy.autoresizingMask = [.width, .height]
         root.addSubview(vibrancy)
+
+        // Black overlay to darken the glass
+        let darkOverlay = NSView(frame: root.bounds)
+        darkOverlay.wantsLayer = true
+        darkOverlay.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.6).cgColor
+        darkOverlay.autoresizingMask = [.width, .height]
+        root.addSubview(darkOverlay)
 
         let hosting = NSHostingController(rootView: OnboardingView(viewModel: viewModel))
         hosting.view.frame = root.bounds

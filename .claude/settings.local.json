@@ -12,7 +12,9 @@
       "WebFetch(domain:github.com)",
       "Bash(ls:*)",
       "Bash(bash /Users/bryancaro/FractalX/App/FnX/build.sh)",
-      "WebFetch(domain:fractalx.lemonsqueezy.com)"
+      "WebFetch(domain:fractalx.lemonsqueezy.com)",
+      "Bash(iconutil:*)",
+      "Bash(sips:*)"
     ]
   }
 }

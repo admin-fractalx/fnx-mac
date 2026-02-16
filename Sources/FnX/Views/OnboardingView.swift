@@ -53,14 +53,40 @@ struct OnboardingView: View {
     }
 
     private var welcomePage: some View {
-        OnboardingPageLayout(
-            icon: "waveform.circle.fill",
-            iconSize: 72,
-            title: "FnX",
-            titleSize: 42,
-            subtitle: "Your voice, everywhere.",
-            bodyText: "Dictate text into any app with a single key.\nFast, private, and seamless."
-        )
+        VStack(spacing: 0) {
+            Spacer()
+
+            if let logoURL = Bundle.module.url(forResource: "AppLogo", withExtension: "png"),
+               let nsImage = NSImage(contentsOf: logoURL) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 160, height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 36))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 36)
+                            .strokeBorder(.white.opacity(0.08), lineWidth: 1)
+                    )
+                    .shadow(color: .white.opacity(0.06), radius: 30)
+                    .shadow(color: .black.opacity(0.5), radius: 20, y: 10)
+            }
+
+            Text("Your voice, everywhere.")
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.7))
+                .padding(.top, 28)
+
+            Text("Dictate text into any app with a single key.\nFast, private, and seamless.")
+                .font(.system(size: 13))
+                .foregroundStyle(.white.opacity(0.35))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 60)
+                .padding(.top, 10)
+
+            Spacer()
+            Spacer()
+        }
     }
 
     private var stepsPage: some View {
@@ -241,10 +267,10 @@ private struct StepCard: View {
         VStack(spacing: 0) {
             Text("\(step)")
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundStyle(.white.opacity(0.25))
+                .foregroundStyle(.white.opacity(0.3))
             Image(systemName: icon)
                 .font(.system(size: 28, weight: .light))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(.white.opacity(0.9))
                 .padding(.top, 8)
             Text(label)
                 .font(.system(size: 13, weight: .semibold))
@@ -252,13 +278,13 @@ private struct StepCard: View {
                 .padding(.top, 8)
             Text(desc)
                 .font(.system(size: 11))
-                .foregroundStyle(.white.opacity(0.38))
+                .foregroundStyle(.white.opacity(0.45))
                 .multilineTextAlignment(.center)
                 .padding(.top, 4)
         }
         .frame(width: 136, height: 156)
-        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 18))
-        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.white.opacity(0.08), lineWidth: 0.5))
+        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.white.opacity(0.1), lineWidth: 0.5))
     }
 }
 
@@ -271,33 +297,46 @@ private struct PermissionRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Color.accentColor)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
                 .frame(width: 34, height: 34)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.white)
                 Text(description)
                     .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.38))
+                    .foregroundStyle(.white.opacity(0.45))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button(buttonTitle, action: action)
-                .buttonStyle(.bordered)
-
-            Image(systemName: granted ? "checkmark.circle.fill" : "circle.dashed")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(granted ? .green : .white.opacity(0.25))
+            if granted {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.green)
+            } else {
+                Button(action: action) {
+                    Text(buttonTitle)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(.white.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(.white.opacity(0.2), lineWidth: 0.5)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(16)
         .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.08), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.1), lineWidth: 0.5))
     }
 }
 

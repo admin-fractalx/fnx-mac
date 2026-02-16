@@ -22,9 +22,13 @@ cp "${BUILD_DIR}/${APP_NAME}" "${MACOS_DIR}/"
 # Copy Info.plist
 cp "Info.plist" "${CONTENTS_DIR}/Info.plist"
 
-# Copy SPM resource bundles (contains whisper model)
+# Copy app icon
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 mkdir -p "${RESOURCES_DIR}"
+cp "icons/AppIcon.icns" "${RESOURCES_DIR}/AppIcon.icns"
+echo "  Copied AppIcon.icns"
+
+# Copy SPM resource bundles (contains whisper model)
 for bundle in "${BUILD_DIR}"/*.bundle; do
     if [ -d "$bundle" ]; then
         cp -R "$bundle" "${RESOURCES_DIR}/"

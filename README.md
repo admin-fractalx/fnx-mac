@@ -1,6 +1,14 @@
-# FnX
+<p align="center">
+  <img src="icons/iTunesArtwork@2x.png" width="140" alt="FnX Logo" />
+</p>
 
-**Your voice, everywhere.** A lightweight macOS menu bar app that turns speech into text in any application. Hold **Fn** to record, release to transcribe — the text is typed directly into whatever you're working on.
+<h1 align="center">FnX</h1>
+
+<p align="center">
+  <strong>Your voice, everywhere.</strong><br/>
+  A lightweight macOS menu bar app that turns speech into text in any application.<br/>
+  Hold <strong>Fn</strong> to record, release to transcribe — the text is typed directly into whatever you're working on.
+</p>
 
 <p align="center">
   <strong>Hold Fn</strong> &rarr; Speak &rarr; <strong>Release Fn</strong> &rarr; Text appears at your cursor

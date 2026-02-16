@@ -27,7 +27,10 @@ let package = Package(
             path: "Sources/FnX",
             exclude: ["App"],
             resources: [
-                .copy("Resources/ggml-base.bin")
+                .copy("Resources/ggml-base.bin"),
+                .copy("Resources/AppLogo.png"),
+                .copy("Resources/menubar_icon.png"),
+                .copy("Resources/menubar_icon@2x.png"),
             ]
         ),
         .executableTarget(
