@@ -22,6 +22,16 @@ cp "${BUILD_DIR}/${APP_NAME}" "${MACOS_DIR}/"
 # Copy Info.plist
 cp "Info.plist" "${CONTENTS_DIR}/Info.plist"
 
+# Copy SPM resource bundles (contains whisper model)
+RESOURCES_DIR="${CONTENTS_DIR}/Resources"
+mkdir -p "${RESOURCES_DIR}"
+for bundle in "${BUILD_DIR}"/*.bundle; do
+    if [ -d "$bundle" ]; then
+        cp -R "$bundle" "${RESOURCES_DIR}/"
+        echo "  Copied resource: $(basename $bundle)"
+    fi
+done
+
 # Reset onboarding so it shows on next launch (skip when building for release)
 if [ -z "${BUILD_FOR_RELEASE}" ]; then
   defaults delete com.fnx.app fnx_onboarding_completed 2>/dev/null || true

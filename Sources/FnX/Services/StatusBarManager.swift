@@ -1,14 +1,24 @@
 import AppKit
 
-final class StatusBarManager {
+public final class StatusBarManager {
     private let statusItem: NSStatusItem
     private let rulesManager: RulesManager
+    private let licenseManager: LicenseManager
     private let onSettingsRequested: () -> Void
+    private let onLicenseRequested: () -> Void
     private let onQuitRequested: () -> Void
 
-    init(rulesManager: RulesManager, onSettingsRequested: @escaping () -> Void, onQuitRequested: @escaping () -> Void) {
+    public init(
+        rulesManager: RulesManager,
+        licenseManager: LicenseManager,
+        onSettingsRequested: @escaping () -> Void,
+        onLicenseRequested: @escaping () -> Void,
+        onQuitRequested: @escaping () -> Void
+    ) {
         self.rulesManager = rulesManager
+        self.licenseManager = licenseManager
         self.onSettingsRequested = onSettingsRequested
+        self.onLicenseRequested = onLicenseRequested
         self.onQuitRequested = onQuitRequested
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
@@ -23,22 +33,42 @@ final class StatusBarManager {
         }
     }
 
-    func setupMenu() {
+    public func setupMenu() {
         let menu = NSMenu()
 
-        // Rules section
+        let isPro = licenseManager.tier == .pro
+        if isPro {
+            let header = NSMenuItem(title: "FnX Pro", action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+        } else {
+            let remaining = licenseManager.remainingToday
+            let header = NSMenuItem(title: "FnX Free — \(remaining)/\(licenseManager.dailyLimit) left", action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+        }
+
+        menu.addItem(NSMenuItem.separator())
+
         let rulesHeader = NSMenuItem(title: "Rules", action: nil, keyEquivalent: "")
         rulesHeader.isEnabled = false
         menu.addItem(rulesHeader)
 
-        // "Direct" (no rule) option
         let directItem = NSMenuItem(title: "Direct (no processing)", action: #selector(selectNoRule), keyEquivalent: "")
         directItem.target = self
         directItem.state = rulesManager.activeRule == nil ? .on : .off
         menu.addItem(directItem)
 
         for rule in rulesManager.rules {
-            let item = NSMenuItem(title: rule.name, action: #selector(selectRule(_:)), keyEquivalent: "")
+            let tag: String
+            if rule.useWhisperTranslate {
+                tag = " — Offline"
+            } else if isPro {
+                tag = " — AI"
+            } else {
+                tag = " — AI (Pro)"
+            }
+            let item = NSMenuItem(title: "\(rule.name)\(tag)", action: #selector(selectRule(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = rule.id.uuidString
             item.state = rulesManager.activeRule?.id == rule.id ? .on : .off
@@ -46,6 +76,11 @@ final class StatusBarManager {
         }
 
         menu.addItem(NSMenuItem.separator())
+
+        let licenseTitle = isPro ? "Manage License..." : "Upgrade to Pro..."
+        let licenseItem = NSMenuItem(title: licenseTitle, action: #selector(licenseTapped), keyEquivalent: "")
+        licenseItem.target = self
+        menu.addItem(licenseItem)
 
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(settingsTapped), keyEquivalent: ",")
         settingsItem.target = self
@@ -60,7 +95,7 @@ final class StatusBarManager {
         statusItem.menu = menu
     }
 
-    func setRecording(_ recording: Bool) {
+    public func setRecording(_ recording: Bool) {
         if let button = statusItem.button {
             if recording {
                 button.image = NSImage(systemSymbolName: "record.circle.fill", accessibilityDescription: "Recording")
@@ -83,6 +118,10 @@ final class StatusBarManager {
               let uuid = UUID(uuidString: idString) else { return }
         rulesManager.activeRuleID = uuid
         setupMenu()
+    }
+
+    @objc private func licenseTapped() {
+        onLicenseRequested()
     }
 
     @objc private func settingsTapped() {

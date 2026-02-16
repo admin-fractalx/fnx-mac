@@ -1,11 +1,13 @@
 import AVFoundation
 
-final class AudioRecorder {
+public final class AudioRecorder {
     private var audioEngine: AVAudioEngine?
     private var audioFile: AVAudioFile?
-    private(set) var lastRecordingURL: URL?
+    public private(set) var lastRecordingURL: URL?
 
-    func startRecording() throws {
+    public init() {}
+
+    public func startRecording() throws {
         let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("fnx_recording_\(UUID().uuidString).wav")
 
@@ -13,7 +15,6 @@ final class AudioRecorder {
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
-        // Target: 16kHz mono for Whisper
         guard let recordingFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 16000,
@@ -63,14 +64,14 @@ final class AudioRecorder {
         self.lastRecordingURL = tempURL
     }
 
-    func stopRecording() {
+    public func stopRecording() {
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine?.stop()
         audioEngine = nil
         audioFile = nil
     }
 
-    enum RecordingError: Error {
+    public enum RecordingError: Error {
         case formatError
         case converterError
     }

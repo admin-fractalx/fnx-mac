@@ -1,13 +1,14 @@
 import AppKit
 import Carbon.HIToolbox
 
-final class TextInjector {
-    func type(_ text: String) {
+public final class TextInjector {
+    public init() {}
+
+    public func type(_ text: String) {
         let source = CGEventSource(stateID: .hidSystemState)
 
-        // Use Unicode string injection via CGEvent
         let chars = Array(text.utf16)
-        let chunkSize = 20 // CGEvent supports up to 20 Unicode chars at a time
+        let chunkSize = 20
 
         for i in stride(from: 0, to: chars.count, by: chunkSize) {
             let end = min(i + chunkSize, chars.count)
@@ -24,8 +25,7 @@ final class TextInjector {
                 keyUp.post(tap: .cghidEventTap)
             }
 
-            // Small delay between chunks to avoid dropped characters
-            usleep(5000) // 5ms
+            usleep(5000)
         }
     }
 }

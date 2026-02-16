@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(swift build:*)",
-      "Bash(defaults delete:*)"
+      "Bash(defaults delete:*)",
+      "Bash(curl:*)",
+      "Bash(swift package resolve:*)",
+      "Bash(git ls-remote:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)",
+      "Bash(bash /Users/bryancaro/FractalX/App/FnX/build.sh)",
+      "WebFetch(domain:fractalx.lemonsqueezy.com)"
     ]
   }
 }

@@ -8,7 +8,6 @@ enum KeychainHelper {
     static func saveAPIKey(_ key: String) -> Bool {
         guard let data = key.data(using: .utf8) else { return false }
 
-        // Delete existing
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -16,7 +15,6 @@ enum KeychainHelper {
         ]
         SecItemDelete(deleteQuery as CFDictionary)
 
-        // Add new
         let addQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

@@ -1,23 +1,23 @@
 import AppKit
 
-final class KeyboardMonitor {
+public final class KeyboardMonitor {
     private let onRecordingStarted: () -> Void
     private let onRecordingStopped: () -> Void
     private var globalMonitor: Any?
     private var isFnHeld = false
 
-    init(onRecordingStarted: @escaping () -> Void, onRecordingStopped: @escaping () -> Void) {
+    public init(onRecordingStarted: @escaping () -> Void, onRecordingStopped: @escaping () -> Void) {
         self.onRecordingStarted = onRecordingStarted
         self.onRecordingStopped = onRecordingStopped
     }
 
-    func start() {
+    public func start() {
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handleFlagsChanged(event)
         }
     }
 
-    func stop() {
+    public func stop() {
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil

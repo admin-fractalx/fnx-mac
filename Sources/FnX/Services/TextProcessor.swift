@@ -1,9 +1,11 @@
 import Foundation
 
-final class TextProcessor {
+public final class TextProcessor {
     private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
 
-    func process(text: String, rulePrompt: String, apiKey: String) async throws -> String {
+    public init() {}
+
+    public func process(text: String, rulePrompt: String, apiKey: String) async throws -> String {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -38,11 +40,11 @@ final class TextProcessor {
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    enum ProcessorError: Error, LocalizedError {
+    public enum ProcessorError: Error, LocalizedError {
         case apiError(String)
         case decodingError
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .apiError(let msg): return "GPT API error: \(msg)"
             case .decodingError: return "Failed to decode GPT response"
