@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Secrets.swift
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cat > Sources/FnX/Helpers/Secrets.swift << 'SWIFT'
+          public enum Secrets {
+              public static let openAIAPIKey = "PLACEHOLDER"
+          }
+          SWIFT
+          sed -i '' "s|PLACEHOLDER|${OPENAI_API_KEY}|" Sources/FnX/Helpers/Secrets.swift
+
+      - name: Build release
+        run: BUILD_FOR_RELEASE=1 ./build.sh
+
+      - name: Update version in Info.plist
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.VERSION }}" FnX.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.VERSION }}" FnX.app/Contents/Info.plist
+
+      - name: Sign app
+        if: env.SIGNING_IDENTITY != ''
+        env:
+          SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
+        run: |
+          codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" FnX.app/Contents/MacOS/FnX
+          codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" FnX.app
+
+      - name: Create zip
+        run: ditto -c -k --sequesterRsrc --keepParent FnX.app "FnX-${{ steps.version.outputs.VERSION }}.zip"
+
+      - name: Compute SHA256
+        id: sha
+        run: echo "SHA256=$(shasum -a 256 FnX-${{ steps.version.outputs.VERSION }}.zip | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: FnX-${{ steps.version.outputs.VERSION }}.zip
+          body: |
+            ## FnX v${{ steps.version.outputs.VERSION }}
+
+            ### Install via Homebrew
+            ```bash
+            brew tap admin-fractalx/tap
+            brew install --cask fnx
+            ```
+
+            ### Manual install
+            Download `FnX-${{ steps.version.outputs.VERSION }}.zip`, unzip, and move `FnX.app` to `/Applications`.
+
+            ---
+            SHA256: `${{ steps.sha.outputs.SHA256 }}`
+
+      - name: Update Homebrew Cask
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          SHA256: ${{ steps.sha.outputs.SHA256 }}
+        run: |
+          if [ -z "${TAP_GITHUB_TOKEN}" ]; then
+            echo "TAP_GITHUB_TOKEN not set — skipping Homebrew tap update"
+            exit 0
+          fi
+
+          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/admin-fractalx/homebrew-tap.git /tmp/homebrew-tap
+          mkdir -p /tmp/homebrew-tap/Casks
+
+          cat > /tmp/homebrew-tap/Casks/fnx.rb << RUBY
+          cask "fnx" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/admin-fractalx/fnX/releases/download/v#{version}/FnX-#{version}.zip"
+            name "FnX"
+            desc "Voice-to-text for macOS — hold Fn to record, release to transcribe"
+            homepage "https://github.com/admin-fractalx/fnX"
+
+            depends_on macos: ">= :ventura"
+
+            app "FnX.app"
+
+            zap trash: [
+              "~/Library/Preferences/com.fnx.app.plist",
+            ]
+          end
+          RUBY
+
+          cd /tmp/homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/fnx.rb
+          git commit -m "Update fnx to ${VERSION}" || echo "No changes"
+          git push
