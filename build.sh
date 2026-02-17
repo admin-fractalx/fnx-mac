@@ -29,9 +29,11 @@ cp "icons/AppIcon.icns" "${RESOURCES_DIR}/AppIcon.icns"
 echo "  Copied AppIcon.icns"
 
 # Copy SPM resource bundles
+# SPM's Bundle.module looks in Bundle.main.bundleURL (the .app root),
+# so bundles must be placed there for the app to find them.
 for bundle in "${BUILD_DIR}"/*.bundle; do
     if [ -d "$bundle" ]; then
-        cp -R "$bundle" "${RESOURCES_DIR}/"
+        cp -R "$bundle" "${APP_DIR}/"
         echo "  Copied resource: $(basename $bundle)"
     fi
 done

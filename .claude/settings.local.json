@@ -35,7 +35,8 @@
       "Bash(git pull:*)",
       "Bash(git remote set-url:*)",
       "Bash(gh repo edit:*)",
-      "Bash(gh release list:*)"
+      "Bash(gh release list:*)",
+      "Bash(brew uninstall:*)"
     ]
   }
 }
