@@ -17,17 +17,14 @@ let package = Package(
             targets: ["FnX"]
         ),
     ],
-    dependencies: [
-        .package(url: "https://github.com/exPHAT/SwiftWhisper.git", from: "1.2.0")
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "FnXUI",
-            dependencies: ["SwiftWhisper"],
+            dependencies: [],
             path: "Sources/FnX",
             exclude: ["App"],
             resources: [
-                .copy("Resources/ggml-base.bin"),
                 .copy("Resources/AppLogo.png"),
                 .copy("Resources/menubar_icon.png"),
                 .copy("Resources/menubar_icon@2x.png"),

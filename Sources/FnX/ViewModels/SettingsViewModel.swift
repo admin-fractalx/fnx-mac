@@ -47,7 +47,7 @@ final class SettingsViewModel: ObservableObject {
         editingRule = rule
         editorName = rule.name
         editorPrompt = rule.prompt
-        editorUseTranslate = rule.useWhisperTranslate
+        editorUseTranslate = rule.useTranslation
         isShowingEditor = true
     }
 
@@ -67,10 +67,10 @@ final class SettingsViewModel: ObservableObject {
         if var existing = editingRule {
             existing.name = name
             existing.prompt = prompt
-            existing.useWhisperTranslate = editorUseTranslate
+            existing.useTranslation = editorUseTranslate
             rulesManager.updateRule(existing)
         } else {
-            rulesManager.addRule(Rule(name: name, prompt: prompt, useWhisperTranslate: editorUseTranslate))
+            rulesManager.addRule(Rule(name: name, prompt: prompt, useTranslation: editorUseTranslate))
         }
         isShowingEditor = false
         loadRules()

@@ -370,7 +370,7 @@ private struct ProStatusView: View {
             VStack(alignment: .leading, spacing: 12) {
                 ProFeatureRow(icon: "infinity", text: "Unlimited transcriptions")
                 ProFeatureRow(icon: "wand.and.stars", text: "Smart Rules with AI processing")
-                ProFeatureRow(icon: "globe", text: "Offline translate to English")
+                ProFeatureRow(icon: "globe", text: "Translate to English via API")
             }
             .padding(18)
             .frame(maxWidth: .infinity, alignment: .leading)

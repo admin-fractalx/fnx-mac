@@ -2,4 +2,3 @@
 *.app
 *.zip
 Sources/FnX/Secrets.swift
-ggml-base.bin

@@ -4,14 +4,14 @@ public struct Rule: Codable, Identifiable, Equatable {
     public let id: UUID
     public var name: String
     public var prompt: String
-    public var useWhisperTranslate: Bool
+    public var useTranslation: Bool
     public var isDefault: Bool
 
-    public init(id: UUID = UUID(), name: String, prompt: String, useWhisperTranslate: Bool = false, isDefault: Bool = false) {
+    public init(id: UUID = UUID(), name: String, prompt: String, useTranslation: Bool = false, isDefault: Bool = false) {
         self.id = id
         self.name = name
         self.prompt = prompt
-        self.useWhisperTranslate = useWhisperTranslate
+        self.useTranslation = useTranslation
         self.isDefault = isDefault
     }
 }
@@ -20,7 +20,7 @@ public final class RulesManager {
     private let rulesKey = "fnx_rules"
     private let activeRuleIDKey = "fnx_active_rule_id"
     private let rulesVersionKey = "fnx_rules_version"
-    private let currentVersion = 6 // Bump this when defaults change
+    private let currentVersion = 7 // Bump this when defaults change
 
     public init() {
         migrateIfNeeded()
@@ -93,7 +93,7 @@ public final class RulesManager {
             Rule(
                 name: "🌐 Translate to English",
                 prompt: "",
-                useWhisperTranslate: true,
+                useTranslation: true,
                 isDefault: true
             ),
 

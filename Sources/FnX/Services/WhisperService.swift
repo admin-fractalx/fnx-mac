@@ -1,92 +1,89 @@
-import AVFoundation
-import SwiftWhisper
+import Foundation
 
 public final class WhisperService {
-    private var whisper: Whisper?
-    private var whisperParams: WhisperParams?
-
-    public init() {
-        loadModel()
-    }
-
-    private func loadModel() {
-        let modelURL: URL? =
-            Bundle.module.url(forResource: "ggml-base", withExtension: "bin")
-            ?? Bundle.main.url(forResource: "ggml-base", withExtension: "bin")
-
-        guard let url = modelURL else {
-            print("[WhisperService] Model file not found in bundle")
-            return
-        }
-
-        let params = WhisperParams.default
-        params.language = .auto
-        params.no_context = true
-        params.translate = false
-
-        whisperParams = params
-        whisper = Whisper(fromFileURL: url, withParams: params)
-        print("[WhisperService] Model loaded from \(url.lastPathComponent)")
-    }
+    public init() {}
 
     public func transcribe(fileURL: URL, translate: Bool = false) async throws -> String {
-        guard let whisper else {
-            throw WhisperError.modelNotLoaded
+        let apiKey = Secrets.openAIAPIKey
+
+        let endpoint = translate
+            ? "https://api.openai.com/v1/audio/translations"
+            : "https://api.openai.com/v1/audio/transcriptions"
+
+        guard let url = URL(string: endpoint) else {
+            throw WhisperError.invalidEndpoint
         }
 
-        whisperParams?.translate = translate
+        let boundary = UUID().uuidString
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
-        let samples = try loadAudioSamples(from: fileURL)
+        let audioData = try Data(contentsOf: fileURL)
 
-        guard !samples.isEmpty else {
-            throw WhisperError.invalidAudioFile
+        var body = Data()
+
+        // file field
+        body.appendMultipart("--\(boundary)\r\n")
+        body.appendMultipart("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileURL.lastPathComponent)\"\r\n")
+        body.appendMultipart("Content-Type: audio/wav\r\n\r\n")
+        body.append(audioData)
+        body.appendMultipart("\r\n")
+
+        // model field
+        body.appendMultipart("--\(boundary)\r\n")
+        body.appendMultipart("Content-Disposition: form-data; name=\"model\"\r\n\r\n")
+        body.appendMultipart("whisper-1\r\n")
+
+        // response_format field
+        body.appendMultipart("--\(boundary)\r\n")
+        body.appendMultipart("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n")
+        body.appendMultipart("text\r\n")
+
+        // closing boundary
+        body.appendMultipart("--\(boundary)--\r\n")
+
+        request.httpBody = body
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WhisperError.invalidResponse
         }
 
-        let segments = try await whisper.transcribe(audioFrames: samples)
-        let text = segments.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard httpResponse.statusCode == 200 else {
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw WhisperError.apiError(statusCode: httpResponse.statusCode, message: errorBody)
+        }
+
+        let text = String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return text
     }
 
-    public func transcribe(fileURL: URL, apiKey: String) async throws -> String {
-        return try await transcribe(fileURL: fileURL)
-    }
-
-    private func loadAudioSamples(from url: URL) throws -> [Float] {
-        let file = try AVAudioFile(forReading: url)
-        guard let format = AVAudioFormat(
-            commonFormat: .pcmFormatFloat32,
-            sampleRate: 16000,
-            channels: 1,
-            interleaved: false
-        ) else {
-            throw WhisperError.invalidAudioFile
-        }
-
-        guard let buffer = AVAudioPCMBuffer(
-            pcmFormat: format,
-            frameCapacity: AVAudioFrameCount(file.length)
-        ) else {
-            throw WhisperError.invalidAudioFile
-        }
-
-        try file.read(into: buffer)
-
-        guard let channelData = buffer.floatChannelData?[0] else {
-            throw WhisperError.invalidAudioFile
-        }
-
-        return Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
-    }
-
     public enum WhisperError: Error, LocalizedError {
-        case modelNotLoaded
-        case invalidAudioFile
+        case invalidEndpoint
+        case invalidResponse
+        case apiError(statusCode: Int, message: String)
 
         public var errorDescription: String? {
             switch self {
-            case .modelNotLoaded: return "Whisper model failed to load"
-            case .invalidAudioFile: return "Audio file is invalid or too short"
+            case .invalidEndpoint:
+                return "Invalid API endpoint"
+            case .invalidResponse:
+                return "Invalid response from server"
+            case .apiError(let statusCode, let message):
+                return "API error (\(statusCode)): \(message)"
             }
+        }
+    }
+}
+
+private extension Data {
+    mutating func appendMultipart(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
         }
     }
 }

@@ -122,7 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let finalText: String
 
                 if let activeRule = rulesManager.activeRule {
-                    if activeRule.useWhisperTranslate {
+                    if activeRule.useTranslation {
                         finalText = try await whisperService.transcribe(fileURL: audioURL, translate: true)
                     } else if !activeRule.prompt.isEmpty {
                         let rawText = try await whisperService.transcribe(fileURL: audioURL)

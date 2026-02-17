@@ -18,7 +18,7 @@
 
 ### Core
 - **Fn key trigger** — Hold to record, release to transcribe. Works globally in any app.
-- **Local Whisper model** — Transcription runs entirely on-device using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). No audio leaves your machine.
+- **OpenAI Whisper API** — High-quality transcription powered by OpenAI's Whisper model. Supports 90+ languages.
 - **Dynamic Island overlay** — A notch-style expanding indicator shows recording, processing, and done states with smooth animations.
 - **Audio feedback** — Subtle ascending/descending tones confirm when recording starts and stops.
 - **Menu bar app** — Lives in the status bar. No dock icon, no distractions.
@@ -28,7 +28,7 @@ Built-in text transformation rules that process your transcription before typing
 
 | Rule | What it does |
 |------|-------------|
-| **Translate to English** | Offline translation via Whisper — supports 90+ languages, no internet needed |
+| **Translate to English** | Translation via OpenAI Whisper API — supports 90+ languages |
 | **Clean English** | Cleans up dictation and outputs polished English (fixes grammar, removes filler words) |
 | **Clean Spanish** | Same cleanup, outputs polished Spanish |
 | **Prompt Builder** | Turns spoken ideas into well-structured AI prompts |
@@ -48,7 +48,8 @@ FnX detects when audio quality is too poor and silently discards the result inst
 ## Requirements
 
 - macOS 13+
-- MacBook with Apple Silicon or Intel (Whisper model runs locally)
+- OpenAI API key (for Whisper transcription)
+- Internet connection
 
 ## Permissions
 
@@ -98,7 +99,7 @@ Click the FnX icon in the menu bar to:
 
 Open **Settings** from the menu bar → click **New Rule**:
 - Give it a name
-- Toggle **offline Whisper translation** for language translation without AI
+- Toggle **Whisper API translation** for language translation to English
 - Or write a custom **AI prompt** that transforms the transcribed text
 
 ## Architecture
@@ -111,7 +112,7 @@ Sources/FnX/
 ├── Services/
 │   ├── KeyboardMonitor.swift     # Global Fn key detection
 │   ├── AudioRecorder.swift       # AVAudioEngine recording (16kHz PCM)
-│   ├── WhisperService.swift      # Local whisper.cpp inference
+│   ├── WhisperService.swift      # OpenAI Whisper API transcription
 │   ├── TextProcessor.swift       # GPT-4o-mini for AI rules
 │   ├── TextInjector.swift        # CGEvent keyboard simulation
 │   ├── RulesManager.swift        # Rule storage & defaults
@@ -129,7 +130,6 @@ Sources/FnX/
 │   ├── KeychainHelper.swift      # Secure storage
 │   └── Secrets.swift             # API configuration
 └── Resources/
-    └── ggml-base.bin             # Bundled Whisper model (~148MB)
 ```
 
 ### How It Works
@@ -137,11 +137,11 @@ Sources/FnX/
 ```
 Fn pressed → AudioRecorder starts → WAV file captured at 16kHz
                                           │
-Fn released → WhisperService transcribes locally
+Fn released → WhisperService transcribes via OpenAI API
                                           │
               RulesManager checks active rule
               ├── No rule → raw text
-              ├── Translate → Whisper with translate=true
+              ├── Translate → OpenAI translations endpoint
               └── AI rule → GPT-4o-mini processes text
                                           │
               Hallucination filter validates output
@@ -165,7 +165,7 @@ NOTARIZE=1 NOTARY_KEYCHAIN_PROFILE="your-profile" ./release.sh 1.0
 ## Tech Stack
 
 - **Swift 5.9+** / **SwiftUI** + **AppKit**
-- **[SwiftWhisper](https://github.com/exPHAT/SwiftWhisper)** — whisper.cpp Swift bindings
+- **OpenAI Whisper API** — Cloud-based speech-to-text transcription
 - **AVAudioEngine** — Real-time audio capture
 - **CGEvent** (Carbon) — Low-level keyboard simulation
 - **LemonSqueezy** — License validation & payments

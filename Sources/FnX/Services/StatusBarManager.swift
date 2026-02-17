@@ -68,8 +68,8 @@ public final class StatusBarManager {
 
         for rule in rulesManager.rules {
             let tag: String
-            if rule.useWhisperTranslate {
-                tag = " — Offline"
+            if rule.useTranslation {
+                tag = " — API"
             } else if isPro {
                 tag = " — AI"
             } else {

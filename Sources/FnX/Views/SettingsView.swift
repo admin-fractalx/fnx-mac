@@ -120,7 +120,7 @@ struct SettingsView: View {
                     Text(selectedRule.name)
                         .font(.system(size: 17, weight: .bold))
                     Spacer()
-                    RuleKindBadge(isOffline: selectedRule.useWhisperTranslate)
+                    RuleKindBadge(isTranslate: selectedRule.useTranslation)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -131,8 +131,8 @@ struct SettingsView: View {
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(.secondary)
 
-                        if selectedRule.useWhisperTranslate {
-                            Text("This rule uses offline Whisper translation to English.")
+                        if selectedRule.useTranslation {
+                            Text("This rule uses OpenAI Whisper API to translate to English.")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
                         } else if selectedRule.prompt.isEmpty {
@@ -197,8 +197,8 @@ struct SettingsView: View {
 private func defaultRuleDescription(for rule: Rule) -> some View {
     let descriptions: [String: (desc: String, details: [String])] = [
         "🌐 Translate to English": (
-            "Translates speech from any language to English using offline Whisper.",
-            ["Works offline — no internet needed", "Supports 90+ languages", "Real-time translation during transcription"]
+            "Translates speech from any language to English using OpenAI Whisper API.",
+            ["Uses OpenAI Whisper for translation", "Supports 90+ languages", "High-quality translation during transcription"]
         ),
         "✏️ Clean English": (
             "Cleans up dictated text and outputs polished English.",
@@ -247,7 +247,7 @@ private struct RuleRow: View {
                     .lineLimit(1)
                     .foregroundStyle(isSelected ? .white : .primary)
 
-                Text(rule.useWhisperTranslate ? "Translate to English offline" : rule.prompt)
+                Text(rule.useTranslation ? "Translate to English via API" : rule.prompt)
                     .font(.system(size: 11))
                     .lineLimit(2)
                     .foregroundStyle(isSelected ? .white.opacity(0.82) : .secondary)
@@ -261,7 +261,7 @@ private struct RuleRow: View {
                     .foregroundStyle(isSelected ? .white.opacity(0.6) : .secondary.opacity(0.5))
             }
 
-            RuleKindBadge(isOffline: rule.useWhisperTranslate, compact: true)
+            RuleKindBadge(isTranslate: rule.useTranslation, compact: true)
         }
         .padding(10)
         .background(
@@ -276,18 +276,18 @@ private struct RuleRow: View {
 }
 
 private struct RuleKindBadge: View {
-    let isOffline: Bool
+    let isTranslate: Bool
     var compact = false
 
     var body: some View {
-        Text(isOffline ? "Offline" : "AI")
+        Text(isTranslate ? "API" : "AI")
             .font(.system(size: compact ? 10 : 11, weight: .bold))
             .padding(.horizontal, compact ? 7 : 9)
             .padding(.vertical, compact ? 4 : 5)
-            .foregroundStyle(isOffline ? .green : .orange)
+            .foregroundStyle(isTranslate ? .blue : .orange)
             .background(
                 RoundedRectangle(cornerRadius: 999)
-                    .fill((isOffline ? Color.green : Color.orange).opacity(0.12))
+                    .fill((isTranslate ? Color.blue : Color.orange).opacity(0.12))
             )
     }
 }
@@ -312,7 +312,7 @@ private struct RuleEditorSheet: View {
                     .textFieldStyle(.roundedBorder)
             }
 
-            Toggle("Use offline Whisper translation to English", isOn: $viewModel.editorUseTranslate)
+            Toggle("Use Whisper API translation to English", isOn: $viewModel.editorUseTranslate)
                 .font(.system(size: 12))
 
             VStack(alignment: .leading, spacing: 6) {
@@ -326,7 +326,7 @@ private struct RuleEditorSheet: View {
                     .disabled(viewModel.editorUseTranslate)
                     .opacity(viewModel.editorUseTranslate ? 0.5 : 1)
 
-                Text("Ignored when offline translation is enabled.")
+                Text("Ignored when API translation is enabled.")
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
