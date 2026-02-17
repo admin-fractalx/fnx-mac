@@ -58,16 +58,69 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.VERSION }}" FnX.app/Contents/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.VERSION }}" FnX.app/Contents/Info.plist
 
+      - name: Import signing certificate
+        if: ${{ secrets.DEVELOPER_ID_CERTIFICATE != '' }}
+        env:
+          DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          DEVELOPER_ID_PASSWORD: ${{ secrets.DEVELOPER_ID_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import certificate
+          echo "$DEVELOPER_ID_CERTIFICATE" | base64 --decode > $RUNNER_TEMP/certificate.p12
+          security import $RUNNER_TEMP/certificate.p12 \
+            -k "$KEYCHAIN_PATH" \
+            -P "$DEVELOPER_ID_PASSWORD" \
+            -T /usr/bin/codesign
+          rm $RUNNER_TEMP/certificate.p12
+
+          # Allow codesign to access keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain
+
       - name: Sign app
-        if: env.SIGNING_IDENTITY != ''
+        if: ${{ secrets.SIGNING_IDENTITY != '' }}
         env:
           SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
         run: |
+          # Sign all binaries and bundles inside the app
+          find FnX.app -name "*.bundle" -exec codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" {} \;
           codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" FnX.app/Contents/MacOS/FnX
           codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" FnX.app
 
+          # Verify
+          codesign --verify --deep --strict FnX.app
+          echo "Signing verified successfully"
+
       - name: Create zip
         run: ditto -c -k --sequesterRsrc --keepParent FnX.app "FnX-${{ steps.version.outputs.VERSION }}.zip"
+
+      - name: Notarize app
+        if: ${{ secrets.APPLE_ID != '' && secrets.SIGNING_IDENTITY != '' }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          xcrun notarytool submit "FnX-${{ steps.version.outputs.VERSION }}.zip" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --wait
+
+          # Staple the notarization ticket to the app
+          xcrun stapler staple FnX.app
+          echo "Notarization complete"
+
+          # Re-create zip with stapled app
+          rm "FnX-${{ steps.version.outputs.VERSION }}.zip"
+          ditto -c -k --sequesterRsrc --keepParent FnX.app "FnX-${{ steps.version.outputs.VERSION }}.zip"
 
       - name: Compute SHA256
         id: sha
@@ -119,6 +172,11 @@ jobs:
             depends_on macos: ">= :ventura"
 
             app "FnX.app"
+
+            postflight do
+              system_command "/usr/bin/xattr",
+                             args: ["-cr", "\#{appdir}/FnX.app"]
+            end
 
             zap trash: [
               "~/Library/Preferences/com.fnx.app.plist",
