@@ -170,20 +170,33 @@ struct OnboardingView: View {
 
     private var tryItPage: some View {
         VStack(spacing: 0) {
-            Image(systemName: "hand.tap.fill")
-                .font(.system(size: 44, weight: .thin))
-                .foregroundStyle(.white)
-                .padding(.top, 40)
-
             Text("Try It!")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(.white)
-                .padding(.top, 20)
+                .padding(.top, 40)
+
+            HStack(spacing: 6) {
+                Text("Hold")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.white.opacity(0.45))
+                Text("Fn")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.white.opacity(0.2), lineWidth: 0.5))
+                Text("and speak, then release.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.white.opacity(0.45))
+            }
+            .padding(.top, 12)
 
             HStack(spacing: 10) {
                 Circle()
                     .fill(viewModel.isTryRecording ? Color.red : Color.white.opacity(0.25))
                     .frame(width: 9, height: 9)
+                    .shadow(color: viewModel.isTryRecording ? .red.opacity(0.6) : .clear, radius: 6)
                 Text(viewModel.tryItStatus)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.white.opacity(0.55))
@@ -192,30 +205,36 @@ struct OnboardingView: View {
             .padding(.vertical, 8)
             .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.08), lineWidth: 0.5))
-            .padding(.top, 24)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.isTryRecording)
+            .padding(.top, 20)
 
-            ZStack(alignment: .top) {
+            ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(.white.opacity(0.04))
                     .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.07), lineWidth: 0.5))
-                    .frame(height: 160)
+                    .frame(height: 180)
 
                 if viewModel.showTryPlaceholder && viewModel.tryItText.isEmpty {
-                    Text("Your transcription will appear here...")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.18))
+                    HStack(spacing: 6) {
+                        Image(systemName: "waveform")
+                            .font(.system(size: 12))
+                        Text("Your transcription will appear here...")
+                    }
+                    .font(.system(size: 13))
+                    .foregroundStyle(.white.opacity(0.18))
+                    .padding(16)
                 }
                 ScrollView {
                     Text(viewModel.tryItText)
-                        .font(.system(size: 14))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.9))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(16)
                 }
-                .frame(maxHeight: 160)
+                .frame(maxHeight: 180)
             }
-            .padding(.horizontal, 40)
-            .padding(.top, 24)
+            .padding(.horizontal, 36)
+            .padding(.top, 20)
             Spacer()
         }
     }
