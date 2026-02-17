@@ -90,10 +90,10 @@ jobs:
             version "${VERSION}"
             sha256 "${SHA256}"
 
-            url "https://github.com/admin-fractalx/fnX/releases/download/v#{version}/FnX-#{version}.zip"
+            url "https://github.com/admin-fractalx/fnx-mac/releases/download/v#{version}/FnX-#{version}.zip"
             name "FnX"
             desc "Voice-to-text for macOS — hold Fn to record, release to transcribe"
-            homepage "https://github.com/admin-fractalx/fnX"
+            homepage "https://github.com/admin-fractalx/fnx-mac"
 
             depends_on macos: ">= :ventura"
 
