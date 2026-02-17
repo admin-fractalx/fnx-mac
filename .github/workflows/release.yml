@@ -11,6 +11,13 @@ permissions:
 jobs:
   build:
     runs-on: macos-14
+    env:
+      SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
+      DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+      DEVELOPER_ID_PASSWORD: ${{ secrets.DEVELOPER_ID_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,10 +66,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.VERSION }}" FnX.app/Contents/Info.plist
 
       - name: Import signing certificate
-        if: ${{ secrets.DEVELOPER_ID_CERTIFICATE != '' }}
-        env:
-          DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
-          DEVELOPER_ID_PASSWORD: ${{ secrets.DEVELOPER_ID_PASSWORD }}
+        if: env.DEVELOPER_ID_CERTIFICATE != ''
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
@@ -85,9 +89,7 @@ jobs:
           security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain
 
       - name: Sign app
-        if: ${{ secrets.SIGNING_IDENTITY != '' }}
-        env:
-          SIGNING_IDENTITY: ${{ secrets.SIGNING_IDENTITY }}
+        if: env.SIGNING_IDENTITY != ''
         run: |
           # Sign all binaries and bundles inside the app
           find FnX.app -name "*.bundle" -exec codesign --force --options runtime --timestamp -s "${SIGNING_IDENTITY}" {} \;
@@ -102,11 +104,7 @@ jobs:
         run: ditto -c -k --sequesterRsrc --keepParent FnX.app "FnX-${{ steps.version.outputs.VERSION }}.zip"
 
       - name: Notarize app
-        if: ${{ secrets.APPLE_ID != '' && secrets.SIGNING_IDENTITY != '' }}
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        if: env.APPLE_ID != '' && env.SIGNING_IDENTITY != ''
         run: |
           xcrun notarytool submit "FnX-${{ steps.version.outputs.VERSION }}.zip" \
             --apple-id "$APPLE_ID" \
