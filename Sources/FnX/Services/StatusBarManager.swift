@@ -7,18 +7,21 @@ public final class StatusBarManager {
     private let onSettingsRequested: () -> Void
     private let onLicenseRequested: () -> Void
     private let onQuitRequested: () -> Void
+    private let onCheckForUpdatesRequested: () -> Void
 
     public init(
         rulesManager: RulesManager,
         licenseManager: LicenseManager,
         onSettingsRequested: @escaping () -> Void,
         onLicenseRequested: @escaping () -> Void,
+        onCheckForUpdatesRequested: @escaping () -> Void,
         onQuitRequested: @escaping () -> Void
     ) {
         self.rulesManager = rulesManager
         self.licenseManager = licenseManager
         self.onSettingsRequested = onSettingsRequested
         self.onLicenseRequested = onLicenseRequested
+        self.onCheckForUpdatesRequested = onCheckForUpdatesRequested
         self.onQuitRequested = onQuitRequested
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
@@ -43,14 +46,15 @@ public final class StatusBarManager {
     public func setupMenu() {
         let menu = NSMenu()
 
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let isPro = licenseManager.tier == .pro
         if isPro {
-            let header = NSMenuItem(title: "FnX Pro", action: nil, keyEquivalent: "")
+            let header = NSMenuItem(title: "FnX v\(version) — Pro", action: nil, keyEquivalent: "")
             header.isEnabled = false
             menu.addItem(header)
         } else {
             let remaining = licenseManager.remainingToday
-            let header = NSMenuItem(title: "FnX Free — \(remaining)/\(licenseManager.dailyLimit) left", action: nil, keyEquivalent: "")
+            let header = NSMenuItem(title: "FnX v\(version) — \(remaining)/\(licenseManager.dailyLimit) left", action: nil, keyEquivalent: "")
             header.isEnabled = false
             menu.addItem(header)
         }
@@ -92,6 +96,10 @@ public final class StatusBarManager {
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(settingsTapped), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
+
+        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdatesTapped), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -140,6 +148,10 @@ public final class StatusBarManager {
 
     @objc private func settingsTapped() {
         onSettingsRequested()
+    }
+
+    @objc private func checkForUpdatesTapped() {
+        onCheckForUpdatesRequested()
     }
 
     @objc private func quitTapped() {

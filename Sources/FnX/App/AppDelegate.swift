@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             licenseManager: licenseManager,
             onSettingsRequested: { [weak self] in self?.openSettings() },
             onLicenseRequested: { [weak self] in self?.openLicense() },
+            onCheckForUpdatesRequested: { [weak self] in self?.checkForUpdates() },
             onQuitRequested: { NSApp.terminate(nil) }
         )
 
@@ -239,6 +240,57 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if uniqueChars.count <= 1 { return false }
 
         return true
+    }
+
+    private func checkForUpdates() {
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+
+        Task {
+            do {
+                let url = URL(string: "https://api.github.com/repos/admin-fractalx/fnx-mac/releases/latest")!
+                var request = URLRequest(url: url)
+                request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+                let (data, _) = try await URLSession.shared.data(for: request)
+
+                guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let tagName = json["tag_name"] as? String,
+                      let htmlURL = json["html_url"] as? String else {
+                    await MainActor.run { self.showUpdateAlert(message: "Could not check for updates. Please try again later.") }
+                    return
+                }
+
+                let latestVersion = tagName.hasPrefix("v") ? String(tagName.dropFirst()) : tagName
+
+                await MainActor.run {
+                    if latestVersion > currentVersion {
+                        let alert = NSAlert()
+                        alert.messageText = "Update Available"
+                        alert.informativeText = "FnX v\(latestVersion) is available. You're currently on v\(currentVersion)."
+                        alert.addButton(withTitle: "Download")
+                        alert.addButton(withTitle: "Later")
+                        alert.alertStyle = .informational
+                        let response = alert.runModal()
+                        if response == .alertFirstButtonReturn, let releaseURL = URL(string: htmlURL) {
+                            NSWorkspace.shared.open(releaseURL)
+                        }
+                    } else {
+                        self.showUpdateAlert(message: "You're up to date! FnX v\(currentVersion) is the latest version.")
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    self.showUpdateAlert(message: "Could not check for updates. Please try again later.")
+                }
+            }
+        }
+    }
+
+    private func showUpdateAlert(message: String) {
+        let alert = NSAlert()
+        alert.messageText = "Check for Updates"
+        alert.informativeText = message
+        alert.alertStyle = .informational
+        alert.runModal()
     }
 
     private func openLicense() {

@@ -14,7 +14,28 @@
       "Bash(bash /Users/bryancaro/FractalX/App/FnX/build.sh)",
       "WebFetch(domain:fractalx.lemonsqueezy.com)",
       "Bash(iconutil:*)",
-      "Bash(sips:*)"
+      "Bash(sips:*)",
+      "Bash(gh auth status:*)",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh secret set OPENAI_API_KEY --repo admin-fractalx/fnX --body \"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\")",
+      "Bash(gh auth token:*)",
+      "Bash(open \"https://github.com/settings/tokens/new?scopes=repo&description=FnX+Homebrew+Tap\")",
+      "Bash(gh secret set:*)",
+      "Bash(gh secret list:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh release view:*)",
+      "Bash(git pull:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh release list:*)"
     ]
   }
 }
