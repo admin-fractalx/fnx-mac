@@ -8,6 +8,7 @@ enum OverlayState: Equatable {
     case done
     case limitReached
     case proRequired
+    case missingAPIKey
 }
 
 final class OverlayViewModel: ObservableObject {
@@ -54,6 +55,12 @@ final class OverlayViewModel: ObservableObject {
     func showProRequired() {
         state = .proRequired
         label = "Pro required for AI Rules"
+        appear()
+    }
+
+    func showMissingAPIKey() {
+        state = .missingAPIKey
+        label = "No OpenAI API key"
         appear()
     }
 

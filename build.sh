@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+# Ensure local secrets file exists (gitignored; required for compilation).
+# Real values go here for local dev, or are injected by CI. See docs/DEVELOPMENT.md.
+SECRETS_LOCAL="Sources/FnX/Helpers/Secrets+Local.swift"
+if [ ! -f "${SECRETS_LOCAL}" ]; then
+    echo "⚠️  ${SECRETS_LOCAL} not found — creating empty stub."
+    echo "    Configure your OpenAI key (see docs/DEVELOPMENT.md): env var, Keychain, or paste into the file."
+    cat > "${SECRETS_LOCAL}" << 'SWIFT'
+// Gitignored local stub. See Secrets+Local.swift.example.
+extension Secrets {
+    static let localFallbackAPIKey = ""
+}
+SWIFT
+fi
+
 echo "Building FnX..."
 swift build -c release
 

@@ -1,3 +1,19 @@
+import Foundation
+
 public enum Secrets {
-    public static let openAIAPIKey = "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"
+    /// OpenAI API key resolved at runtime in this order:
+    ///   1. `OPENAI_API_KEY` environment variable
+    ///   2. macOS Keychain (`com.fnx.openai-api-key`, via `KeychainHelper`)
+    ///   3. Compile-time fallback from `Secrets+Local.swift` (gitignored)
+    ///
+    /// See docs/DEVELOPMENT.md for setup. The repo never ships a real key.
+    public static var openAIAPIKey: String {
+        if let env = ProcessInfo.processInfo.environment["OPENAI_API_KEY"], !env.isEmpty {
+            return env
+        }
+        if let keychain = KeychainHelper.getAPIKey(), !keychain.isEmpty {
+            return keychain
+        }
+        return localFallbackAPIKey
+    }
 }

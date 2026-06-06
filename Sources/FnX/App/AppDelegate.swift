@@ -70,6 +70,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func startRecording() {
         guard !isRecording else { return }
 
+        guard !Secrets.openAIAPIKey.isEmpty else {
+            DispatchQueue.main.async {
+                self.overlayWindow.showMissingAPIKey()
+            }
+            return
+        }
+
         guard licenseManager.canTranscribe else {
             DispatchQueue.main.async {
                 self.overlayWindow.showLimitReached()

@@ -72,11 +72,16 @@ Download `FnX-x.x.zip` from [Releases](https://github.com/nicklama/fnx/releases)
 ### From Source
 
 ```bash
-git clone https://github.com/nicklama/fnx.git
-cd fnx
+git clone https://github.com/admin-fractalx/fnx-mac.git
+cd fnx-mac
+cp Sources/FnX/Helpers/Secrets+Local.swift.example \
+   Sources/FnX/Helpers/Secrets+Local.swift
+# Edit Secrets+Local.swift and paste your OpenAI API key
 ./build.sh
 open FnX.app
 ```
+
+Full setup, API-key configuration options, debugging tips, and how to change the AI models: see [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md). Release/signing/notarization: [`docs/RELEASE.md`](docs/RELEASE.md). Architecture overview: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Usage
 

@@ -15,7 +15,9 @@ struct OverlayView: View {
     private let bodyHeight: CGFloat = 48
     
     private var isWide: Bool {
-        viewModel.state == .limitReached || viewModel.state == .proRequired
+        viewModel.state == .limitReached
+            || viewModel.state == .proRequired
+            || viewModel.state == .missingAPIKey
     }
     
     private var targetWidth: CGFloat {
@@ -72,6 +74,7 @@ struct OverlayView: View {
         case .done: return .green
         case .limitReached: return .orange
         case .proRequired: return .purple
+        case .missingAPIKey: return .red
         case .hidden: return .clear
         }
     }
@@ -113,21 +116,45 @@ struct OverlayView: View {
     
     private var upgradeContent: some View {
         HStack(spacing: 10) {
-            Image(systemName: viewModel.state == .proRequired ? "lock.fill" : "exclamationmark.triangle.fill")
+            Image(systemName: wideIconName)
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(viewModel.state == .proRequired ? .purple : .orange)
-                .shadow(color: (viewModel.state == .proRequired ? Color.purple : .orange).opacity(0.5), radius: 4)
-            
+                .foregroundStyle(wideIconColor)
+                .shadow(color: wideIconColor.opacity(0.5), radius: 4)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.label)
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                Text(viewModel.state == .proRequired ? "Typed raw text instead" : "Upgrade to Pro for unlimited")
+                Text(wideSubtitle)
                     .font(.system(size: 10, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.5))
                     .lineLimit(1)
             }
+        }
+    }
+
+    private var wideIconName: String {
+        switch viewModel.state {
+        case .proRequired: return "lock.fill"
+        case .missingAPIKey: return "key.slash.fill"
+        default: return "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var wideIconColor: Color {
+        switch viewModel.state {
+        case .proRequired: return .purple
+        case .missingAPIKey: return .red
+        default: return .orange
+        }
+    }
+
+    private var wideSubtitle: String {
+        switch viewModel.state {
+        case .proRequired: return "Typed raw text instead"
+        case .missingAPIKey: return "Configure it in Settings"
+        default: return "Upgrade to Pro for unlimited"
         }
     }
 }

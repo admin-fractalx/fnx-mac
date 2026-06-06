@@ -1,4 +1,12 @@
 .build/
 *.app
 *.zip
-Sources/FnX/Secrets.swift
+
+# Secrets — local API key file (see docs/DEVELOPMENT.md)
+Sources/FnX/Helpers/Secrets+Local.swift
+
+# macOS noise
+.DS_Store
+
+# Xcode user state
+.swiftpm/xcode/**/xcuserdata/

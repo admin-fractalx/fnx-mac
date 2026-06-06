@@ -46,16 +46,16 @@ jobs:
           git tag "${{ steps.version.outputs.TAG }}"
           git push origin "${{ steps.version.outputs.TAG }}"
 
-      - name: Generate Secrets.swift
+      - name: Inject OpenAI key into Secrets+Local.swift
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          cat > Sources/FnX/Helpers/Secrets.swift << 'SWIFT'
-          public enum Secrets {
-              public static let openAIAPIKey = "PLACEHOLDER"
+          cat > Sources/FnX/Helpers/Secrets+Local.swift << 'SWIFT'
+          extension Secrets {
+              static let localFallbackAPIKey = "PLACEHOLDER"
           }
           SWIFT
-          sed -i '' "s|PLACEHOLDER|${OPENAI_API_KEY}|" Sources/FnX/Helpers/Secrets.swift
+          sed -i '' "s|PLACEHOLDER|${OPENAI_API_KEY}|" Sources/FnX/Helpers/Secrets+Local.swift
 
       - name: Build release
         run: BUILD_FOR_RELEASE=1 ./build.sh

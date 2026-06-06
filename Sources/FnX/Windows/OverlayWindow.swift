@@ -71,6 +71,16 @@ public final class OverlayWindow: NSWindow {
         }
     }
 
+    public func showMissingAPIKey() {
+        hideTimer?.invalidate()
+        positionAtTop()
+        orderFrontRegardless()
+        viewModel.showMissingAPIKey()
+        hideTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: false) { [weak self] _ in
+            self?.hide()
+        }
+    }
+
     public func hide() {
         hideTimer?.invalidate()
         viewModel.hide()
