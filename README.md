@@ -65,9 +65,15 @@ Grant these in **System Settings → Privacy & Security**.
 
 ## Installation
 
+### Homebrew
+
+```bash
+brew install --cask admin-fractalx/tap/fnx
+```
+
 ### Manual
 
-Download `FnX-x.x.zip` from [Releases](https://github.com/nicklama/fnx/releases), unzip, and move `FnX.app` to `/Applications`.
+Download `FnX-x.x.zip` from [Releases](https://github.com/admin-fractalx/fnx-mac/releases), unzip, and move `FnX.app` to `/Applications`.
 
 ### From Source
 
@@ -132,8 +138,8 @@ Sources/FnX/
 ├── Views/                        # SwiftUI views
 ├── ViewModels/                   # MVVM view models
 ├── Helpers/
-│   ├── KeychainHelper.swift      # Secure storage
-│   └── Secrets.swift             # API configuration
+│   ├── KeychainHelper.swift      # Keychain CRUD for API key
+│   └── Secrets.swift             # Runtime resolver (env → Keychain → Secrets+Local.swift, gitignored)
 └── Resources/
 ```
 
